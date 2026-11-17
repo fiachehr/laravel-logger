@@ -1,4 +1,4 @@
-# Validation record — 0.2.1
+# Validation record — 0.2.2
 
 Automated validation uses PHP and Composer only. PHPUnit runs the package unit
 and Laravel feature tests through Orchestra Testbench. The Blade dashboard ships
@@ -12,12 +12,13 @@ Laravel 13.43.0 / Testbench 11.3.0.
 | Check | Command | Result |
 | --- | --- | --- |
 | Composer metadata | `composer validate --strict` | Passed |
-| PHP style, static analysis and tests | `composer check` | Pint passed; PHPStan level 6 passed; 67 tests / 400 assertions passed |
+| PHP style, static analysis and tests | `composer check` | Pint passed; PHPStan level 6 passed; 71 tests / 423 assertions passed |
 | Dependency audit | `composer audit` | No security vulnerability advisories found |
 
-The 0.2.1 changes remove the previous browser automation and its dependencies,
-configuration and CI job. Runtime PHP, Blade views and bundled dashboard assets
-are unchanged. Screenshots remain documentation assets.
+Checked on the maintenance tree: PHP 8.4.5 only. The six-combination CI matrix
+was not run locally. `node --check` confirmed the dashboard script parses; the
+interactive page was not opened in a browser. PHPUnit covers the dashboard HTTP
+contract, including search POST, CSRF, and the DEBUG option markup.
 
 ## PHP test coverage
 
@@ -26,10 +27,14 @@ The suite covers:
 - Secret-key variants, adversarial privacy canaries, bounded encoding, exception
   origins/traces, request IDs and route-template privacy.
 - Request/queue lifecycle context cleanup and simulated Octane boundaries.
-- File permissions, retention, quotas, concurrent writers, bounded pagination,
-  rotation, cursor tampering/expiry, malformed data and symlink/hardlink rejection.
+- File permissions, including tightening an existing loose directory, retention,
+  the prune command, quotas, short-write rollback, concurrent writers, bounded
+  pagination, rotation, cursor tampering/expiry, malformed data and
+  symlink/hardlink rejection.
+- Storage-failure warnings: one fixed stderr line per minute, with no record data.
 - Dashboard pages, JSON and assets; authorization, security headers, filters and
-  rate limits; absence of log export or mutation routes.
+  rate limits; absence of log export or mutation routes. Dashboard search is a
+  CSRF-protected POST; GET search still works.
 - Independent credentials, mandatory login/logout CSRF, host-auth isolation,
   generic login failures, IP/account budgets, idle/absolute expiry, credential
   rotation, cache failure, revoked-session replay and host-session preservation.

@@ -22,7 +22,7 @@ final class DashboardController
 
     public function entries(Request $request, LogSource $source): JsonResponse
     {
-        $filters = Validator::make($request->query(), [
+        $filters = Validator::make($request->all(), [
             'q' => ['sometimes', 'string', 'max:120'],
             'level' => ['sometimes', Rule::in(['DEBUG', 'INFO', 'NOTICE', 'WARNING', 'ERROR', 'CRITICAL', 'ALERT', 'EMERGENCY'])],
             'service' => ['sometimes', 'string', 'max:120'],

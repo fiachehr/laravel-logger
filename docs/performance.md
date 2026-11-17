@@ -36,7 +36,7 @@ pagination; removed/replaced/truncated files are skipped with rotation feedback.
 Malformed entries and partial/oversized fragments are counted and skipped.
 
 A 64 MiB daily write cap favors predictable disk use over completeness under a
-log flood: rejected records generate a constant-content stderr warning. Raise
-limits deliberately after measuring real traffic, shorten retention, or bind a
+log flood: rejected records generate a constant-content stderr warning at most
+once a minute per process. Raise limits deliberately after measuring real traffic, shorten retention, or bind a
 separate LogSource backed by a production log service if file-only search no
 longer fits. Never add an unbounded scan merely to calculate a total count.

@@ -18,6 +18,7 @@ Route::prefix(config('log-explorer.dashboard.path', 'log-explorer'))
         Route::middleware(AuthorizeDashboard::class)->group(function (): void {
             Route::get('/', [DashboardController::class, 'index'])->name('index');
             Route::get('/api/entries', [DashboardController::class, 'entries'])->name('entries');
+            Route::post('/api/entries', [DashboardController::class, 'entries'])->middleware(VerifyDashboardCsrf::class);
             Route::get('/assets/{asset}', [DashboardController::class, 'asset'])->where('asset', 'explorer-v1\.(css|js)')->name('asset');
             Route::post('/logout', [LoginController::class, 'destroy'])->middleware(VerifyDashboardCsrf::class)->name('logout');
         });

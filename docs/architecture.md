@@ -1,8 +1,8 @@
-# Architecture and acceptance plan
+# Architecture
 
-Repository audit (2026-11-17): empty Git repository, origin fiachehr/laravel-logger,
-PHP CLI 8.4.5, Composer 2.8.6; Docker daemon unavailable.
-There is no existing host application, framework, logger, or frontend to preserve.
+Opt-in Monolog channel, private daily JSONL files, and an authorized read-only
+explorer. Installing the package does not replace the host log stack, users,
+database, or middleware.
 
 ## Decisions
 

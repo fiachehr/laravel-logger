@@ -119,4 +119,32 @@ final class StorageTest extends TestCase
         self::assertSame([], $next['data']);
         self::assertSame(1, $next['meta']['rotated_files']);
     }
+
+    public function test_existing_loose_directory_and_file_permissions_are_tightened(): void
+    {
+        mkdir($this->logRoot, 0777, true);
+        chmod($this->logRoot, 0777);
+        $path = $this->logRoot.'/events-'.gmdate('Y-m-d').'.jsonl';
+        file_put_contents($path, '');
+        chmod($path, 0666);
+        $this->app->make(JsonlFiles::class)->append("{\"ok\":true}\n");
+        clearstatcache(true, $this->logRoot);
+        clearstatcache(true, $path);
+        self::assertSame(0, fileperms($this->logRoot) & 0077);
+        self::assertSame(0, fileperms($path) & 0077);
+        self::assertSame("{\"ok\":true}\n", file_get_contents($path));
+    }
+
+    public function test_prune_command_deletes_only_expired_logs_without_a_new_write(): void
+    {
+        $this->app->make(JsonlFiles::class)->root(true);
+        $today = $this->logRoot.'/events-'.gmdate('Y-m-d').'.jsonl';
+        file_put_contents($this->logRoot.'/events-2000-01-01.jsonl', "{}\n");
+        file_put_contents($today, "{\"keep\":true}\n");
+        file_put_contents($this->logRoot.'/keep.txt', 'keep');
+        $this->artisan('log-explorer:prune')->expectsOutput('Removed 1 expired log file(s).')->assertSuccessful();
+        self::assertFileDoesNotExist($this->logRoot.'/events-2000-01-01.jsonl');
+        self::assertFileExists($today);
+        self::assertFileExists($this->logRoot.'/keep.txt');
+    }
 }

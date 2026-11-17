@@ -2,6 +2,11 @@
 /.github export-ignore
 /tests export-ignore
 /tools export-ignore
+/docs/screenshots export-ignore
+/docs/benchmark-results.json export-ignore
+/docs/releasing.md export-ignore
+/CODE_OF_CONDUCT.md export-ignore
+/CONTRIBUTING.md export-ignore
 /composer.lock export-ignore
 /phpunit.xml export-ignore
 /phpstan.neon export-ignore

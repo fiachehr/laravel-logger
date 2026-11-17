@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="color-scheme" content="light dark">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Log Explorer</title>
     <link rel="stylesheet" href="{{ route('log-explorer.asset', ['asset' => 'explorer-v1.css']) }}">
     <script src="{{ route('log-explorer.asset', ['asset' => 'explorer-v1.js']) }}" defer></script>
@@ -18,7 +19,7 @@
     <section class="intro" aria-labelledby="page-title"><div><p class="eyebrow">OBSERVABILITY / EVENT STREAM</p><h1 id="page-title">A clearer view.<br><span>One event at a time.</span></h1><p class="subtitle">Structured logs, connected requests, and the details that matter.</p></div><div class="stream-note"><span class="pulse" aria-hidden="true"></span> BOUNDED FILE SEARCH<br><small>Read-only · JSONL · No telemetry</small></div></section>
     <form id="filters" class="filter-panel" role="search" aria-label="Filter logs">
         <div class="filter-primary"><label class="search-label"><span class="sr-only">Search logs</span><span aria-hidden="true">⌕</span><input name="q" id="search" type="search" placeholder="Search the event stream…" maxlength="120" autocomplete="off"></label>
-            <label><span class="sr-only">Severity</span><select name="level" aria-label="Severity"><option value="">All severities</option>DEBUG</option><option>INFO</option><option>NOTICE</option><option>WARNING</option><option>ERROR</option><option>CRITICAL</option><option>ALERT</option><option>EMERGENCY</option></select></label>
+            <label><span class="sr-only">Severity</span><select name="level" aria-label="Severity"><option value="">All severities</option><option>DEBUG</option><option>INFO</option><option>NOTICE</option><option>WARNING</option><option>ERROR</option><option>CRITICAL</option><option>ALERT</option><option>EMERGENCY</option></select></label>
             <label><span class="sr-only">Order</span><select name="order" aria-label="Order"><option value="newest">Newest first</option><option value="oldest">Oldest first</option></select></label>
             <button class="primary" type="submit">Search <span aria-hidden="true">↗</span></button><button type="button" id="clear-filters" class="quiet">Reset</button></div>
         <details class="advanced"><summary>More filters <span>Service, event, request, route & time</span></summary><div class="filter-grid">

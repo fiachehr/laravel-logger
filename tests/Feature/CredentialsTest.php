@@ -66,6 +66,9 @@ final class CredentialsTest extends TestCase
         Log::channel('observability')->info('ready', ['event' => 'test.ready']);
         $this->get('/log-explorer')->assertOk()->assertSee('Sign out');
         $this->getJson('/log-explorer/api/entries')->assertOk()->assertJsonPath('data.0.entry.event', 'test.ready');
+        $this->postJson('/log-explorer/api/entries', ['q' => 'test.ready'])->assertStatus(419);
+        $this->postJson('/log-explorer/api/entries', ['q' => 'test.ready'], ['X-CSRF-TOKEN' => session()->token()])
+            ->assertOk()->assertJsonPath('data.0.entry.event', 'test.ready');
         $this->get('/log-explorer/assets/explorer-v1.js')->assertOk();
     }
 

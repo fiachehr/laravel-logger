@@ -27,12 +27,16 @@ final class DashboardTest extends TestCase
         foreach (['/log-explorer', '/log-explorer/api/entries', '/log-explorer/assets/explorer-v1.js', '/log-explorer/assets/explorer-v1.css'] as $path) {
             $this->getJson($path)->assertUnauthorized();
         }
+        $this->postJson('/log-explorer/api/entries', ['q' => 'SECRET_CANARY'])->assertUnauthorized();
         $this->actingAs(new GenericUser(['id' => 7]));
         $this->getJson('/log-explorer/api/entries')->assertForbidden();
         Gate::define('viewLogExplorer', fn () => false);
         $this->get('/log-explorer')->assertForbidden();
         $this->authorized();
-        $this->get('/log-explorer')->assertOk()->assertSee('Event stream');
+        $page = $this->get('/log-explorer')->assertOk()->assertSee('Event stream');
+        self::assertStringContainsString('<option>DEBUG</option>', $page->getContent());
+        self::assertStringNotContainsString('</option>DEBUG', $page->getContent());
+        self::assertStringContainsString('name="csrf-token"', $page->getContent());
         $this->getJson('/log-explorer/api/entries')->assertOk();
         config(['log-explorer.dashboard.enabled' => false]);
         $this->getJson('/log-explorer/api/entries')->assertNotFound();
@@ -56,7 +60,10 @@ final class DashboardTest extends TestCase
         }
         $this->get('/log-explorer/assets/.env')->assertNotFound();
         $this->get('/log-explorer/download')->assertNotFound();
-        $this->post('/log-explorer/api/entries')->assertStatus(405);
+        $this->post('/log-explorer/api/entries', ['q' => 'SECRET_CANARY'])->assertStatus(419);
+        $js = file_get_contents(__DIR__.'/../../resources/assets/explorer-v1.js');
+        self::assertStringNotContainsString('${location.pathname}?${params}', $js);
+        self::assertStringContainsString('method: "POST"', $js);
         config(['log-explorer.dashboard.rate_per_minute' => 1]);
         $this->getJson('/log-explorer/api/entries')->assertStatus(429)->assertHeader('Retry-After');
     }

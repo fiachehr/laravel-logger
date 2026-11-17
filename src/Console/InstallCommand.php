@@ -27,6 +27,7 @@ final class InstallCommand extends Command
             $this->line('Existing configuration preserved.');
         }
         $this->line('Add an observability custom channel using '.CreateLogger::class.'.');
+        $this->line('While LOG_EXPLORER_ENABLED is false, do not select that channel as LOG_CHANNEL or inside a stack. It discards those records and does not forward them.');
         $this->line('Enable LOG_EXPLORER_ENABLED, run log-explorer:password, set the dashboard username/hash, then enable the dashboard.');
         $this->line('Existing host-login integration remains available with LOG_EXPLORER_AUTH_MODE=host and an explicit viewLogExplorer Gate.');
         $this->line('See README.md for the channel, stack and middleware examples.');

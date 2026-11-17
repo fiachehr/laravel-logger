@@ -146,7 +146,7 @@
     controller = new AbortController();
     const current = controller;
     const params = filters();
-    history.replaceState(null, "", `${location.pathname}?${params}`);
+    if (location.search) history.replaceState(null, "", location.pathname);
     if (cursors[page]) params.set("cursor", cursors[page]);
     rows.setAttribute("aria-busy", "true");
     feedback.textContent = "Reading a bounded search window…";
@@ -154,15 +154,21 @@
     $("#next").disabled = true;
     $("#previous").disabled = true;
     try {
-      const response = await fetch(
-        `${document.body.dataset.endpoint}?${params}`,
-        {
-          headers: { Accept: "application/json" },
-          signal: current.signal,
-          credentials: "same-origin",
-          cache: "no-store",
+      const csrf = document.querySelector('meta[name="csrf-token"]');
+      if (!csrf || !csrf.content)
+        throw new Error("Dashboard session is unavailable. Reload the page.");
+      const response = await fetch(document.body.dataset.endpoint, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          "X-CSRF-TOKEN": csrf.content,
         },
-      );
+        body: JSON.stringify(Object.fromEntries(params.entries())),
+        signal: current.signal,
+        credentials: "same-origin",
+        cache: "no-store",
+      });
       if (response.status === 401 || response.status === 403) {
         $("#poll").value = "0";
         if (response.status === 401 && $("#sign-in-again")) {
@@ -178,6 +184,7 @@
               : "Sign in to the host application to view logs.",
             403: "Your account is not authorized to view logs.",
             404: "The dashboard is disabled.",
+            419: "Reload the page and search again.",
             422: "Invalid filters or expired cursor. Reset the search.",
             429: "Rate limit reached. Pause and try again.",
             503: "Log storage is unavailable. Run log-explorer:doctor.",
@@ -429,7 +436,9 @@
       localStorage.setItem("log-explorer-theme", value);
     } catch {}
   });
-  for (const [key, value] of new URLSearchParams(location.search))
+  const restored = new URLSearchParams(location.search);
+  if (location.search) history.replaceState(null, "", location.pathname);
+  for (const [key, value] of restored)
     if (form.elements.namedItem(key) && key !== "cursor")
       form.elements.namedItem(key).value = ["from", "until"].includes(key)
         ? value.replace(/\.\d{3}Z$/, "")

@@ -7,6 +7,7 @@ namespace Fiachehr\LaravelLogger\Tests\Feature;
 use Fiachehr\LaravelLogger\Context\WorkerContext;
 use Fiachehr\LaravelLogger\Http\CorrelateRequest;
 use Fiachehr\LaravelLogger\Logging\JsonFormatter;
+use Fiachehr\LaravelLogger\Storage\JsonlFiles;
 use Fiachehr\LaravelLogger\Tests\TestCase;
 use Illuminate\Contracts\Queue\Job;
 use Illuminate\Queue\Events\JobExceptionOccurred;
@@ -140,5 +141,27 @@ final class LoggingTest extends TestCase
         Log::forgetChannel('observability');
         Log::channel('observability')->info('disabled');
         self::assertCount(1, $this->entries());
+    }
+
+    public function test_storage_failures_warn_at_most_once_per_minute_and_omit_record_data(): void
+    {
+        $log = tempnam(sys_get_temp_dir(), 'logger-warn-');
+        $previous = ini_set('error_log', $log);
+        try {
+            config(['log-explorer.storage.root' => 'relative-root']);
+            $this->app->forgetInstance(JsonlFiles::class);
+            Log::forgetChannel('observability');
+            for ($i = 0; $i < 5; $i++) {
+                Log::channel('observability')->info('SECRET_CANARY');
+            }
+            $contents = (string) file_get_contents($log);
+            self::assertSame(1, substr_count($contents, 'structured log write rejected'));
+            self::assertStringNotContainsString('SECRET_CANARY', $contents);
+        } finally {
+            if (is_string($previous)) {
+                ini_set('error_log', $previous);
+            }
+            unlink($log);
+        }
     }
 }

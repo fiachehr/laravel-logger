@@ -30,8 +30,15 @@ final class JsonlFiles
             }
         }
         $canonical = realpath($root);
-        if ($canonical === false || $canonical !== $root) {
+        if ($canonical === false || $canonical !== $root || is_link($canonical)) {
             throw new RuntimeException('Log root must be canonical and not symlinked.');
+        }
+        // An existing directory is not trusted: owner-only mode, or refuse it.
+        @chmod($canonical, 0700);
+        clearstatcache(true, $canonical);
+        $perms = fileperms($canonical);
+        if ($perms === false || ($perms & 0077) !== 0) {
+            throw new RuntimeException('Log directory permissions are not private.');
         }
 
         return $canonical;
@@ -64,23 +71,57 @@ final class JsonlFiles
                 || $actual['ino'] !== $stat['ino'] || $actual['dev'] !== $stat['dev'] || is_link($path)) {
                 throw new RuntimeException('Unsafe log file.');
             }
-            @chmod($path, 0600);
+            if (! $this->privateRegularFile($path, $stat)) {
+                throw new RuntimeException('Unsafe log file.');
+            }
             if ($this->limit('max_file_bytes', 64 * 1024 * 1024, 1024 * 1024 * 1024) < $stat['size'] + strlen($line)) {
                 throw new RuntimeException('Daily log size quota exceeded.');
             }
-            if (fwrite($handle, $line) !== strlen($line)) {
+            // Unbuffered so a short fwrite is the bytes already stored, which can be removed.
+            stream_set_write_buffer($handle, 0);
+            $written = @fwrite($handle, $line);
+            if ($written !== strlen($line)) {
+                @ftruncate($handle, $stat['size']);
+                @fflush($handle);
                 throw new RuntimeException('Incomplete log write.');
             }
-            fflush($handle);
+            if (! fflush($handle)) {
+                throw new RuntimeException('Incomplete log write.');
+            }
         } finally {
             flock($handle, LOCK_UN);
             fclose($handle);
         }
-        // Cheap per-process daily retention; readers remain safe when another worker rotates.
+        // Per-process daily retention. Idle applications should schedule log-explorer:prune.
         $this->prune($root);
     }
 
+    private function privateRegularFile(string $path, array $stat): bool
+    {
+        @chmod($path, 0600);
+        clearstatcache(true, $path);
+        $actual = @lstat($path);
+
+        return $actual !== false
+            && $actual['ino'] === $stat['ino']
+            && $actual['dev'] === $stat['dev']
+            && $actual['nlink'] === 1
+            && ($actual['mode'] & 0170000) === 0100000
+            && ($actual['mode'] & 0077) === 0
+            && ! is_link($path);
+    }
+
     private ?string $lastPruneDate = null;
+
+    public function pruneExpired(): int
+    {
+        $root = $this->root();
+        if ($root === null) {
+            return 0;
+        }
+
+        return $this->deleteExpired($root);
+    }
 
     private function prune(string $root): void
     {
@@ -89,16 +130,26 @@ final class JsonlFiles
             return;
         }
         $this->lastPruneDate = $today;
+        $this->deleteExpired($root);
+    }
+
+    private function deleteExpired(string $root): int
+    {
         $cutoff = gmdate('Y-m-d', time() - $this->limit('retention_days', 14, 365) * 86400);
+        $removed = 0;
         $visited = 0;
         foreach (new \DirectoryIterator($root) as $file) {
             if (++$visited > $this->limit('max_directory_entries', 256, 2048)) {
                 break;
             }
             if (! $file->isLink() && $file->isFile() && preg_match('/\Aevents-(\d{4}-\d{2}-\d{2})\.jsonl\z/D', $file->getFilename(), $m) && $m[1] <= $cutoff) {
-                @unlink($file->getPathname());
+                if (@unlink($file->getPathname())) {
+                    $removed++;
+                }
             }
         }
+
+        return $removed;
     }
 
     public function snapshots(string $order): array
@@ -147,7 +198,8 @@ final class JsonlFiles
             return null;
         }
         $stat = fstat($handle);
-        if ($stat === false || $stat['nlink'] !== 1 || $stat['ino'] !== $snapshot['inode'] || $stat['size'] < $snapshot['size'] || ($stat['mode'] & 0170000) !== 0100000) {
+        if ($stat === false || $stat['nlink'] !== 1 || $stat['ino'] !== $snapshot['inode'] || $stat['size'] < $snapshot['size'] || ($stat['mode'] & 0170000) !== 0100000
+            || ! $this->privateRegularFile($path, $stat)) {
             fclose($handle);
 
             return null;

@@ -14,6 +14,10 @@ final class VerifyDashboardCsrf
     public function handle(Request $request, Closure $next): Response
     {
         $token = $request->input('_token');
+        if (! is_string($token) || $token === '') {
+            $header = $request->headers->get('X-CSRF-TOKEN');
+            $token = is_string($header) ? $header : null;
+        }
         $expected = $request->hasSession() ? $request->session()->token() : null;
         if (! is_string($expected) || ! is_string($token) || ! hash_equals($expected, $token)) {
             throw new TokenMismatchException('Dashboard session token expired.');

@@ -70,6 +70,39 @@ final class AdversarialStorageTest extends TestCase
         }
     }
 
+    public function test_short_write_is_rolled_back_before_the_next_record(): void
+    {
+        $files = $this->app->make(JsonlFiles::class);
+        $files->root(true);
+        $files->append("{\"ok\":true}\n");
+        $path = glob($this->logRoot.'/*.jsonl')[0];
+        $before = file_get_contents($path);
+        $script = tempnam(sys_get_temp_dir(), 'logger-short-');
+        file_put_contents($script, <<<'PHP'
+<?php
+require $argv[1];
+$files = new Fiachehr\LaravelLogger\Storage\JsonlFiles(['root' => $argv[2]]);
+try {
+    $files->append(str_repeat('Y', 8000)."\n");
+    fwrite(STDERR, "UNEXPECTED_SUCCESS\n");
+    exit(2);
+} catch (RuntimeException $e) {
+    exit($e->getMessage() === 'Incomplete log write.' ? 0 : 3);
+}
+PHP);
+        $command = 'trap "" SIGXFSZ; ulimit -f 1; exec '.escapeshellarg(PHP_BINARY).' '.escapeshellarg($script).' '.escapeshellarg(__DIR__.'/../../vendor/autoload.php').' '.escapeshellarg($this->logRoot);
+        $process = proc_open(['bash', '-c', $command], [2 => ['pipe', 'w']], $pipes);
+        self::assertIsResource($process);
+        $stderr = stream_get_contents($pipes[2]);
+        fclose($pipes[2]);
+        $exit = proc_close($process);
+        unlink($script);
+        self::assertSame(0, $exit, $stderr);
+        self::assertSame($before, file_get_contents($path));
+        $files->append("{\"next\":true}\n");
+        self::assertSame(['{"ok":true}', '{"next":true}'], file($path, FILE_IGNORE_NEW_LINES));
+    }
+
     public function test_concurrent_writes_are_complete(): void
     {
         $files = $this->app->make(JsonlFiles::class);

@@ -50,6 +50,7 @@ final class DoctorCommand extends Command
         foreach ($checks as $name => $ok) {
             $this->line(($ok ? '[OK] ' : '[CHECK] ').$name);
         }
+        $this->line('Schedule log-explorer:prune if the application may go a day without writes. Retention otherwise runs on write.');
         $this->line('This checks configuration only; verify the selected dashboard login, authorization and sign-out in a browser.');
 
         return in_array(false, $checks, true) ? self::FAILURE : self::SUCCESS;

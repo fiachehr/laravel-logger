@@ -32,7 +32,9 @@ by uninstall. Follow your own privacy/retention policy to archive/delete them.
 - 429: pause polling; review shared cache and the configured rate budget.
 - 503: run doctor; check canonical storage, permissions and directory-entry quota.
 - Missing records: check channel/stack selection, level threshold, enable flag,
-  daily size cap and stderr. Refresh after rotation. The reader only understands
+  daily size cap and stderr. A disabled package channel discards records routed
+  to it. Refresh after rotation. Schedule `log-explorer:prune` for idle retention.
+  The reader only understands
   this package's files/schema and skips partial or malformed data.
 - No request route: register correlation as route middleware, not before routing.
 - No exception correlation: ensure the request uses correlation middleware and

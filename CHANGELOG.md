@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.2.2 — 2026-11-17
+
+- Roll back a short JSONL append so a failed write cannot join the next record.
+- Limit storage-failure stderr warnings to one per minute per process.
+- Tighten an existing log directory to owner-only mode, or refuse it.
+- Keep dashboard search text out of the address bar and submit it as a CSRF-protected POST.
+- Add `log-explorer:prune` so retention can run when nothing is being written.
+- Fix the severity list so DEBUG is a real option.
+
 ## 0.2.1 — 2026-11-17
 
 - Removed browser automation, JavaScript dependency manifests and the frontend CI job.

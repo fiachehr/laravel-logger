@@ -55,8 +55,8 @@ package's own sign-in page. [Configure the dashboard login](#3-configure-the-bui
   bounded diagnostics, no automatic request bodies or arbitrary object serialization.
 
 Logging and the dashboard are **disabled on installation**. Enable them explicitly.
-The explorer is read-only; its POST endpoints only sign the operator in and out.
-No external telemetry is sent.
+The explorer does not modify logs. Its POST endpoints sign the operator in and
+out and submit a search. No external telemetry is sent.
 
 ## Requirements
 
@@ -126,6 +126,11 @@ To keep existing outputs, include `observability` **once** in your existing stac
 and keep `LOG_CHANNEL=stack`. For example, a stack's `channels` may be
 `['single', 'observability']`. Each destination still has its own privacy behavior;
 this package does not sanitize a copy written to `single`, `daily`, or another logger.
+
+While `LOG_EXPLORER_ENABLED` is false, this custom channel discards the records
+routed to it. It does not forward them to `single`, `stderr`, or any other
+channel. Leave it out of `LOG_CHANNEL` and out of stacks until you enable the
+package. Channels that do not use `CreateLogger` are left unchanged.
 
 ### 3. Configure the built-in login
 
@@ -228,6 +233,8 @@ it does not replace a real browser login test.
 
 1. Search by a literal term, select a severity/order, or open **More filters** for
    service, event, request ID, exception class, route name, HTTP status and UTC dates.
+   The page sends those filters in the request body and does not put them in the
+   address bar. A bookmarked query is applied once, then removed from the URL.
 2. Select an event to open **Overview**, **Exception**, **Context**, **JSON** or
    **Raw**. Raw means the stored sanitized JSON line, never pre-sanitization input.
 3. Use **Show this request** or a table request ID to group events with that ID.
@@ -353,10 +360,17 @@ Free-text `message_mode=redacted` is an opt-in defense in depth: regex cannot
 reliably remove arbitrary secrets or personal data. Prefer categorical production
 messages and review every approved field.
 
-Keep storage canonical, private and outside the web root. New directory/files use
-0700/0600; symlinks/hardlinks are rejected. A daily file at its quota rejects new
-writes with a constant stderr warning. Retention runs on writes; idle installations
-may need operator-managed expiry. Login and API rate limits use the host cache;
+Keep storage canonical, private and outside the web root. New directories and
+files use 0700/0600. An existing directory is changed to 0700 when this process
+can do so; if group or other permission bits remain, storage is refused.
+Symlinks and hardlinks are rejected. A daily file at its quota rejects new
+writes. Repeated storage failures emit one fixed stderr warning per process per
+minute, with a count of the warnings that were skipped. The warning never
+includes the log record. Retention also runs on writes, at most once per process
+per day. Schedule `php artisan log-explorer:prune` daily when the application
+may go a day without writes. The command deletes only expired
+`events-YYYY-MM-DD.jsonl` files in the configured directory. This package does
+not register a scheduler. Login and API rate limits use the host cache;
 use a persistent shared cache across workers. Review trusted proxies, HTTPS,
 Secure/HttpOnly/SameSite cookies and private configuration-cache permissions.
 
