@@ -30,9 +30,23 @@ measure the new authentication/cache overhead. Human assistive-technology testin
 Firefox/WebKit, actual Octane servers and production reverse-proxy deployment remain
 outside this validation. No real operator credentials were used or committed.
 
-Remote CI results for the 0.2 change will be linked after execution. The initial
-0.1 compatibility evidence below is historical, not a substitute for checking the
-new authentication code on the supported PHP/Laravel matrix.
+## Remote 0.2 compatibility matrix
+
+[Run 44147519382](https://github.com/fiachehr/laravel-logger/actions/runs/44147519382)
+passed for commit `75a497fc142b1b437103fdfb30515aaa0cb9dada`:
+
+| PHP minor | Laravel 12 | Laravel 13 |
+| --------- | ---------- | ---------- |
+| 8.3       | Passed     | Passed     |
+| 8.4       | Passed     | Passed     |
+| 8.5       | Passed     | Passed     |
+
+Every PHP job passed Composer validation/resolution, Pint, PHPStan, the full
+67-test suite and Composer audit. The separate browser job passed both clean host
+setups with cached routes/config, all nine browser/axe cases, npm audit and artifact
+upload. An earlier push omitted the route registration file; it was added in the
+commit above before this complete successful run. The initial 0.1 evidence below
+is retained as historical context, not as proof for the new authentication code.
 
 ---
 
