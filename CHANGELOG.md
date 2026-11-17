@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.1 — 2026-11-17
+
+- Removed browser automation, JavaScript dependency manifests and the frontend CI job.
+- Standardized automated tests on PHPUnit with Orchestra Testbench; development
+  and CI require only PHP and Composer.
+- Updated development, contribution and release instructions to match the PHP-only
+  toolchain. The built-in Blade dashboard and its bundled assets are unchanged.
+
 ## 0.2.0 — 2026-11-17
 
 - Added a built-in Blade username/password login, independent from application

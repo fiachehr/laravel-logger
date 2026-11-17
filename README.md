@@ -390,31 +390,30 @@ does not restore access, even when concurrent requests still hold old session da
 
 ## Development and tests
 
+Development and automated checks use PHP and Composer only:
+
 ```bash
 composer install
+composer test
 composer check
 composer audit
-npm ci
-npx playwright install chromium
 ```
 
-Create disposable hosts in **new** directories, never a real application:
+`composer test` runs the PHPUnit unit and Laravel feature tests through Orchestra
+Testbench. Coverage includes logging/privacy, bounded storage and readers,
+exception context, dashboard routes, independent login, CSRF, session revocation,
+rate limits and password hashing. `composer check` also runs Laravel Pint and
+PHPStan. CI runs the PHP suite on PHP 8.3/8.4/8.5 with Laravel 12/13.
+
+The Blade dashboard ships with ready-to-use CSS and vanilla JavaScript; no build
+step or additional development runtime is required. Screenshots are documentation
+assets. For optional file-reader benchmarks, create a disposable Laravel host in a
+**new** directory and use the PHP tooling:
 
 ```bash
 tools/create-smoke-host.sh /absolute/new-host
-LOG_EXPLORER_SMOKE_AUTH=credentials tools/create-smoke-host.sh /absolute/new-credentials-host
-php /absolute/new-host/artisan log-explorer:serve --port=18765
-php /absolute/new-credentials-host/artisan log-explorer:serve --port=18767
-# From another terminal:
-npm test
+php tools/benchmark.php /absolute/new-host
 ```
-
-Smoke credentials are synthetic test data, not production defaults. Tests cover
-both host login and the built-in login on real Laravel hosts with cached routes/
-config. Browser checks include CSRF, unauthorized access, filters, details,
-clipboard, mobile layouts, stored XSS fixtures and automated axe checks. Screenshots
-are actual captures. Reproduce file-reader measurements with
-`php tools/benchmark.php /absolute/new-host`.
 
 ## Upgrading from 0.1
 

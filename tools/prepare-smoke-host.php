@@ -63,7 +63,7 @@ if (getenv('LOG_EXPLORER_SMOKE_AUTH') === 'credentials') {
     $source = file_get_contents($configPath);
     $source = str_replace('return $config;', "\$config['dashboard']['auth']['mode'] = 'credentials';\n".
         "\$config['dashboard']['auth']['username'] = 'smoke-operator';\n".
-        "\$config['dashboard']['auth']['password_hash'] = ".var_export(password_hash('Synthetic-browser-password-ONLY', PASSWORD_DEFAULT), true).";\nreturn \$config;", $source);
+        "\$config['dashboard']['auth']['password_hash'] = ".var_export(password_hash('Synthetic-fixture-password-ONLY', PASSWORD_DEFAULT), true).";\nreturn \$config;", $source);
     file_put_contents($configPath, $source);
 }
 // Seed using the real package formatter + handler, no raw credential-bearing fixtures.

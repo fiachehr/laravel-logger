@@ -1,127 +1,64 @@
-# Validation record — 0.2.0
+# Validation record — 0.2.1
 
-Executed 2026-11-17 on macOS arm64 with PHP 8.4.5, Composer 2.8.6 and Node 22.14.0.
+Automated validation uses PHP and Composer only. PHPUnit runs the package unit
+and Laravel feature tests through Orchestra Testbench. The Blade dashboard ships
+with its CSS and vanilla JavaScript; there is no frontend build step.
 
-- `composer check`: Pint, PHPStan level 6, and **67 PHP tests / 400 assertions**
-  passed with Laravel 13.43.0 / Testbench 11.3.0. An earlier 66-test run also
-  passed with Laravel 12.73.0 / Testbench 10.12.0 before the final transient-store
-  configuration regression case was added. Final matrix results are recorded separately.
-- `npm test`: **9 Chromium browser tests** passed across two real Laravel 13.43.0
-  hosts with cached configuration/routes, one using host guard/Gate mode and one
-  using independent credentials. The credentials host used file sessions/cache
-  and had no database file at its configured database path during the passing run.
-- New tests cover all protected log endpoint classes, mandatory login/logout CSRF,
-  host-auth isolation, generic failures without credential logging/flash input,
-  IP/account attempt budgets, idle/absolute expiry, username rotation, cache loss,
-  failed token registration, revoked-session replay and host-session preservation.
-  The password command was exercised with hidden synthetic input and its output
-  verified as a hash without the plaintext password.
-- The standalone Blade login was browser-checked with axe and keyboard navigation
-  in desktop light/dark and 390px mobile layouts. Real screenshots were captured
-  and inspected. Existing table/filter/detail/XSS/clipboard tests still pass.
-- `composer validate --strict`, `composer audit`, `npm audit` and asset formatting
-  checks passed; dependency audits reported no vulnerabilities.
-- Provider discovery, `config:cache`, `route:cache`, loopback-only development
-  serving and mode-aware `log-explorer:doctor` passed in both clean host modes.
+## Local checks — 2026-11-17
 
-The extension does not change the JSON schema, formatter or reader. Previously
-published file-reader benchmark results remain their own measured run; they do not
-measure the new authentication/cache overhead. Human assistive-technology testing,
-Firefox/WebKit, actual Octane servers and production reverse-proxy deployment remain
-outside this validation. No real operator credentials were used or committed.
+Environment: macOS arm64, PHP 8.4.5, Composer 2.8.6,
+Laravel 13.43.0 / Testbench 11.3.0.
 
-## Remote 0.2 compatibility matrix
+| Check | Command | Result |
+| --- | --- | --- |
+| Composer metadata | `composer validate --strict` | Passed |
+| PHP style, static analysis and tests | `composer check` | Pint passed; PHPStan level 6 passed; 67 tests / 400 assertions passed |
+| Dependency audit | `composer audit` | No security vulnerability advisories found |
 
-[Run 44147519382](https://github.com/fiachehr/laravel-logger/actions/runs/44147519382)
-passed for commit `75a497fc142b1b437103fdfb30515aaa0cb9dada`:
+The 0.2.1 changes remove the previous browser automation and its dependencies,
+configuration and CI job. Runtime PHP, Blade views and bundled dashboard assets
+are unchanged. Screenshots remain documentation assets.
 
-| PHP minor | Laravel 12 | Laravel 13 |
-| --------- | ---------- | ---------- |
-| 8.3       | Passed     | Passed     |
-| 8.4       | Passed     | Passed     |
-| 8.5       | Passed     | Passed     |
+## PHP test coverage
 
-Every PHP job passed Composer validation/resolution, Pint, PHPStan, the full
-67-test suite and Composer audit. The separate browser job passed both clean host
-setups with cached routes/config, all nine browser/axe cases, npm audit and artifact
-upload. An earlier push omitted the route registration file; it was added in the
-commit above before this complete successful run. The initial 0.1 evidence below
-is retained as historical context, not as proof for the new authentication code.
+The suite covers:
 
----
+- Secret-key variants, adversarial privacy canaries, bounded encoding, exception
+  origins/traces, request IDs and route-template privacy.
+- Request/queue lifecycle context cleanup and simulated Octane boundaries.
+- File permissions, retention, quotas, concurrent writers, bounded pagination,
+  rotation, cursor tampering/expiry, malformed data and symlink/hardlink rejection.
+- Dashboard pages, JSON and assets; authorization, security headers, filters and
+  rate limits; absence of log export or mutation routes.
+- Independent credentials, mandatory login/logout CSRF, host-auth isolation,
+  generic login failures, IP/account budgets, idle/absolute expiry, credential
+  rotation, cache failure, revoked-session replay and host-session preservation.
+- Hidden-input password hashing without plaintext output and fail-closed
+  configuration/diagnostics behavior.
 
-## Initial 0.1 validation — 2026-11-17
+## Compatibility matrix
 
-## Local environment and executed checks
+CI runs the PHP suite, Composer validation, Pint, PHPStan and Composer audit for
+PHP 8.3/8.4/8.5 with Laravel 12/Testbench 10 and Laravel 13/Testbench 11.
 
-macOS arm64, PHP 8.4.5, Composer 2.8.6, Node 22.14.0, npm 10.9.2.
-Monolog 3.13.0, Pint 1.32.3, PHPStan 2.3.6 (level 6; generic array value-type
-annotations are not enforced), PHPUnit 12.5.44.
+The previous 0.2 source matrix
+([run 44147519382](https://github.com/fiachehr/laravel-logger/actions/runs/44147519382),
+commit `75a497fc142b1b437103fdfb30515aaa0cb9dada`) passed all six combinations,
+including 67 PHP tests. This is historical PHP compatibility evidence, not a
+claim that the 0.2.1 workflow has already run. Results for the current revision
+must be checked separately in GitHub Actions.
 
-| Check                  | Command / setup                                                                                                             | Result                                                                                                                                                 |
-| ---------------------- | --------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Laravel 12 integration | `composer update --with 'orchestra/testbench:^10.0' --with 'laravel/framework:^12.0' -W --no-interaction`, `composer check` | Laravel 12.72.0 / Testbench 10.12.0; 51 tests passed (259 assertions before final disabled-middleware assertion addition); Pint and PHPStan passed     |
-| Laravel 13 integration | `composer update --with 'orchestra/testbench:^11.0' --with 'laravel/framework:^13.0' -W --no-interaction`, `composer check` | Laravel 13.42.0 / Testbench 11.3.0; 51 tests, 261 assertions passed; Pint and PHPStan passed                                                           |
-| Composer metadata      | `composer validate --strict`                                                                                                | Valid                                                                                                                                                  |
-| Composer dependencies  | `composer audit`                                                                                                            | No security vulnerability advisories found                                                                                                             |
-| Frontend dependencies  | `npm ci` / `npm audit`                                                                                                      | No vulnerabilities                                                                                                                                     |
-| JavaScript             | `node --check resources/assets/explorer-v1.js`                                                                              | Passed                                                                                                                                                 |
-| Clean Laravel 13 host  | `tools/create-smoke-host.sh /absolute/new-host`, auto-discovery, `config:cache`, `route:cache`, seed, `log-explorer:doctor` | Installed by Composer path repository; all doctor checks passed                                                                                        |
-| Clean Laravel 12 host  | `LARAVEL_SKELETON_VERSION='^12.0' tools/create-smoke-host.sh /absolute/new-host`                                            | Installed, discovered, caches built, seeded, all doctor checks passed                                                                                  |
-| Dedicated port         | Both clean hosts: `php artisan log-explorer:serve --port=18765` / `18766`                                                   | Actual Laravel servers launched on 127.0.0.1 with host middleware; production refusal and port validation integration-tested                           |
-| Browser on Laravel 13  | `npm test` against cached real smoke host                                                                                   | 5 Playwright tests passed; Chromium, real session/CSRF, filters/paging/grouping/tabs/clipboard/theme/mobile, hostile response rendering and axe checks |
-| Browser on Laravel 12  | `LOG_EXPLORER_TEST_URL=http://127.0.0.1:18766 npm test`                                                                     | 5 Playwright tests passed; same real-host suite                                                                                                        |
-| Performance            | `php tools/benchmark.php /absolute/smoke-host`                                                                              | 10K/100K/1M datasets measured; methodology and raw results in performance.md / benchmark-results.json                                                  |
+## Coverage limits
 
-Core coverage includes secret-key variants and canaries, unknown object hooks,
-UTF-8, event bounds and formatter fallback, exact exception origin, bounded chains,
-request IDs and route-template privacy, zero SQL enrichment, no auth resolution,
-framework 404 reporting policy, queue success/failure and simulated Octane boundaries,
-read pagination across appends/rotation, literal filters, cursor tamper/expiry/filter
-binding, malformed and oversized fragments, malicious JSON shapes, symlink/hardlink
-rejection, private permissions, retention, and four concurrent writer processes.
-Dashboard tests cover every route class (page/JSON/assets), missing/denied Gate,
-production denial, no-store/CSP/nosniff, rate limits, invalid filters, no export or
-mutation routes, and secret canary absence from stored/API/HTML data. Browser XSS
-fixtures put hostile content in messages, names, context, traces and raw JSON.
-
-The earlier validation runs exposed real defects in canonical temporary test paths,
-route-template redaction, accessible labels and Reset's HTMLFormElement name collision;
-all were corrected before the final passing runs. No failed check is presented as passed.
-
-## Remote compatibility CI
-
-[Run 44025230219](https://github.com/fiachehr/laravel-logger/actions/runs/44025230219)
-passed for commit `254d62c3ae8ad1589b7e8ae32c142a9f908a1c69`:
-
-| PHP minor | Laravel 12 | Laravel 13 |
-| --------- | ---------- | ---------- |
-| 8.3       | Passed     | Passed     |
-| 8.4       | Passed     | Passed     |
-| 8.5       | Passed     | Passed     |
-
-Every matrix job passed strict Composer validation, dependency resolution, Pint,
-PHPStan, all PHP tests, and Composer audit. The separate Linux browser job also
-passed npm install/audit, clean host creation with config/route caching, the five
-Playwright/axe tests and artifact upload. Actions are pinned to verified release
-commit SHAs. This is executed evidence, rather than merely a configured matrix.
-
-## Coverage limits and publication boundaries
-
-- Local binaries were available only for PHP 8.4.5. PHP 8.3 and 8.5 were verified
-  remotely on Linux in all six PHP/Laravel combinations above. Windows file
-  storage is not supported or tested in this initial POSIX implementation.
-- Octane lifecycle events are exercised in-process, not against an actual Octane /
-  Swoole / RoadRunner server. Queue event integration and context reset are tested;
-  no external Redis/database queue daemon was deployed.
-- Browser coverage is Chromium, desktop 1440px and mobile 390px; Firefox/WebKit
-  and human assistive-technology review were not run. Axe is automated evidence,
-  not a blanket accessibility certification. Real captured screenshots were inspected.
-- Benchmarks are warm local filesystem measurements, not network storage,
-  production concurrency, cold-disk, hard latency or fsync durability guarantees.
-- Nginx/TLS examples were documented, not deployed. Docker daemon was unavailable;
-  this implementation and validation require no Docker.
-- Packagist submission, webhooks, GitHub Release creation and production deployment
-  were not performed or claimed. The owner explicitly authorized branch/tag push.
-- Public repository visibility was verified using the connected GitHub repository
-  metadata. Packagist package URL returned 404 during setup; submission is manual.
+- PHPUnit covers HTTP behavior in Laravel's test application; it does not execute
+  client-side interactions, clipboard APIs or visual/accessibility behavior.
+- Local validation uses PHP 8.4. Other supported PHP/framework combinations are
+  exercised by the remote matrix. Windows file storage is not supported/tested
+  in this POSIX implementation.
+- Octane lifecycle events are exercised in-process, not on an actual Octane,
+  Swoole or RoadRunner server. No external queue daemon is required by the tests.
+- Previously measured file-reader benchmarks remain in
+  [performance.md](performance.md). They describe warm local filesystem reads,
+  not production concurrency, cold-disk latency or authentication/cache overhead.
+- Reverse-proxy/TLS deployment and human assistive-technology review are outside
+  the automated suite. No real operator credentials are used by tests.

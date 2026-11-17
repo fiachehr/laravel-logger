@@ -1,7 +1,7 @@
 # Release procedure
 
-1. Run `composer validate --strict`, `composer check`, `composer audit`, `npm ci`,
-   `npm audit`, JavaScript syntax check and real-host browser tests. Test framework
+1. Run `composer validate --strict`, `composer check` and `composer audit`.
+   Automated checks require only PHP and Composer. Test framework
    12/Testbench 10 and 13/Testbench 11. Inspect the six-cell PHP matrix before
    advertising full version coverage; record gaps in validation.md.
 2. Recreate the local smoke host from scratch. Check Composer auto-discovery,
@@ -9,9 +9,9 @@
    Re-run benchmarks if reader, formatter or storage behavior changes.
 3. Review every file for secrets and scope. Update changelog, validation record
    and real screenshots. `git archive` should include source, config, routes,
-   license and bundled assets, with no vendor, node_modules or local .env.
+   license and bundled assets, with no vendor, development test tooling or local .env.
 4. With owner authorization, commit and create an annotated semantic version tag,
-   e.g. `git tag -a v0.2.0 -m 'v0.2.0: built-in Blade login and independent credentials'`, then
+   e.g. `git tag -a v0.2.1 -m 'v0.2.1: PHP-only development and PHPUnit tests'`, then
    push the branch and tag. Compare local and remote commit/tag refs. Never
    force-push an existing published version. A GitHub Release is a separate action.
 5. Verify remote CI. Publishing tags is not proof that CI ran or passed. If a

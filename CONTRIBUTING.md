@@ -4,9 +4,9 @@ Open an issue describing the concrete behavior and proposed change. Keep privacy
 controls enabled; new fields need explicit collection rationale and adversarial
 canary coverage. Never commit real credentials, private logs or personal data.
 
-Use Composer, PSR-4, PSR-12/Laravel Pint. Run `composer check`, `composer audit`,
-`node --check resources/assets/explorer-v1.js` and browser tests for UI changes.
-The README documents a clean local smoke host. Add meaningful regression tests,
+Use Composer, PSR-4, PSR-12/Laravel Pint. Run `composer validate --strict`,
+`composer check` and `composer audit`. Automated tests use PHPUnit with Orchestra
+Testbench; add meaningful unit or Laravel feature regression tests,
 update documentation/changelog, and state tested PHP/framework versions. Avoid
 new runtime/frontend dependencies without a concrete need.
 

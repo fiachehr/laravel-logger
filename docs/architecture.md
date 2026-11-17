@@ -1,7 +1,7 @@
 # Architecture and acceptance plan
 
 Repository audit (2026-11-17): empty Git repository, origin fiachehr/laravel-logger,
-PHP CLI 8.4.5, Composer 2.8.6, Node 22.14.0; Docker daemon unavailable.
+PHP CLI 8.4.5, Composer 2.8.6; Docker daemon unavailable.
 There is no existing host application, framework, logger, or frontend to preserve.
 
 ## Decisions
