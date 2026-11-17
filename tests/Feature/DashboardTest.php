@@ -11,6 +11,17 @@ use Illuminate\Support\Facades\Log;
 
 final class DashboardTest extends TestCase
 {
+    public function test_published_01_dashboard_configurations_keep_host_authentication_without_the_new_auth_block(): void
+    {
+        $dashboard = config('log-explorer.dashboard');
+        unset($dashboard['auth']);
+        config(['log-explorer.dashboard' => $dashboard]);
+        $this->getJson('/log-explorer/api/entries')->assertUnauthorized();
+        $this->authorized();
+        $this->getJson('/log-explorer/api/entries')->assertOk();
+        $this->get('/log-explorer/login')->assertNotFound();
+    }
+
     public function test_pages_api_and_assets_require_enabled_authenticated_explicit_authorization(): void
     {
         foreach (['/log-explorer', '/log-explorer/api/entries', '/log-explorer/assets/explorer-v1.js', '/log-explorer/assets/explorer-v1.css'] as $path) {

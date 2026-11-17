@@ -25,7 +25,7 @@ final class ServeCommand extends Command
 
             return self::FAILURE;
         }
-        $this->line('Serving the entire host app on 127.0.0.1:'.$port.'; dashboard authentication and Gate still apply.');
+        $this->line('Serving the entire host app on 127.0.0.1:'.$port.'; dashboard authentication still applies.');
 
         return $this->call('serve', ['--host' => '127.0.0.1', '--port' => $port, '--tries' => 1, '--no-reload' => true]);
     }

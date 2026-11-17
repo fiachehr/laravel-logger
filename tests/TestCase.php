@@ -27,6 +27,7 @@ abstract class TestCase extends Orchestra
         $app['config']->set('log-explorer.storage.root', $this->logRoot);
         $app['config']->set('log-explorer.dashboard.enabled', true);
         $app['config']->set('log-explorer.dashboard.middleware', []);
+        $app['config']->set('log-explorer.dashboard.auth.mode', 'host');
         $app['config']->set('cache.default', 'array');
         $app['config']->set('logging.channels.observability', ['driver' => 'custom', 'via' => CreateLogger::class]);
     }
@@ -52,10 +53,9 @@ abstract class TestCase extends Orchestra
     protected function tearDown(): void
     {
         if (isset($this->logRoot) && is_dir($this->logRoot) && ! is_link($this->logRoot)) {
-            foreach (glob($this->logRoot.'/*') ?: [] as $file) {
-                if (is_file($file) || is_link($file)) {
-                    unlink($file);
-                }
+            $files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($this->logRoot, \FilesystemIterator::SKIP_DOTS), \RecursiveIteratorIterator::CHILD_FIRST);
+            foreach ($files as $file) {
+                $file->isDir() && ! $file->isLink() ? rmdir($file->getPathname()) : unlink($file->getPathname());
             }
             rmdir($this->logRoot);
         }

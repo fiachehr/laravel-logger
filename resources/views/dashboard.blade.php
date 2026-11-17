@@ -8,11 +8,11 @@
     <link rel="stylesheet" href="{{ route('log-explorer.asset', ['asset' => 'explorer-v1.css']) }}">
     <script src="{{ route('log-explorer.asset', ['asset' => 'explorer-v1.js']) }}" defer></script>
 </head>
-<body data-endpoint="{{ route('log-explorer.entries') }}">
+<body data-endpoint="{{ route('log-explorer.entries') }}" @if($credentialsMode ?? false) data-login="{{ route('log-explorer.login') }}" @endif>
 <a class="skip" href="#entries">Skip to log entries</a>
 <header class="topbar">
     <a class="brand" href="{{ route('log-explorer.index') }}"><span class="brand-mark" aria-hidden="true">≋</span> LOG<span class="brand-light">EXPLORER</span><span class="version" aria-hidden="true">01</span></a>
-    <div class="top-actions"><span class="private-label"><span aria-hidden="true">◆</span> PRIVATE WORKSPACE</span><button id="theme" class="quiet" aria-label="Switch color theme">◐ Theme</button></div>
+    <div class="top-actions"><span class="private-label"><span aria-hidden="true">◆</span> PRIVATE WORKSPACE</span><button id="theme" class="quiet" aria-label="Switch color theme">◐ Theme</button>@if($credentialsMode ?? false)<a id="sign-in-again" class="quiet" href="{{ route('log-explorer.login') }}" hidden>Sign in again</a><form id="dashboard-sign-out" action="{{ route('log-explorer.logout') }}" method="POST">@csrf<button type="submit" class="quiet">Sign out</button></form>@endif</div>
 </header>
 <main>
     <section class="intro" aria-labelledby="page-title"><div><p class="eyebrow">OBSERVABILITY / EVENT STREAM</p><h1 id="page-title">A clearer view.<br><span>One event at a time.</span></h1><p class="subtitle">Structured logs, connected requests, and the details that matter.</p></div><div class="stream-note"><span class="pulse" aria-hidden="true"></span> BOUNDED FILE SEARCH<br><small>Read-only · JSONL · No telemetry</small></div></section>

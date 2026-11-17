@@ -48,13 +48,16 @@ jobs:
       - run: node --check resources/assets/explorer-v1.js
       - run: npx playwright install --with-deps chromium
       - run: tools/create-smoke-host.sh "$RUNNER_TEMP/explorer-host"
+      - run: LOG_EXPLORER_SMOKE_AUTH=credentials tools/create-smoke-host.sh "$RUNNER_TEMP/credentials-host"
       - name: Browser tests on real Laravel host with cached configuration and routes
         run: |
           php "$RUNNER_TEMP/explorer-host/artisan" log-explorer:serve --port=18765 > "$RUNNER_TEMP/explorer-server.log" 2>&1 &
           server_pid=$!
-          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          php "$RUNNER_TEMP/credentials-host/artisan" log-explorer:serve --port=18767 > "$RUNNER_TEMP/credentials-server.log" 2>&1 &
+          credentials_pid=$!
+          trap 'kill "$server_pid" "$credentials_pid" 2>/dev/null || true' EXIT
           for attempt in $(seq 1 30); do
-            if curl -s -o /dev/null http://127.0.0.1:18765/smoke/login; then break; fi
+            if curl -s -o /dev/null http://127.0.0.1:18765/smoke/login && curl -s -o /dev/null http://127.0.0.1:18767/log-explorer/login; then break; fi
             sleep 1
           done
           npm test

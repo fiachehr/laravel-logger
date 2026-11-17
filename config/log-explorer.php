@@ -40,7 +40,16 @@ return [
         'path' => env('LOG_EXPLORER_PATH', 'log-explorer'),
         'guard' => null,
         'middleware' => ['web'],
-        'gate' => 'viewLogExplorer', // host must define this Gate; no permissive fallback
+        'gate' => 'viewLogExplorer', // required in host auth mode; no permissive fallback
+        'auth' => [
+            'mode' => env('LOG_EXPLORER_AUTH_MODE', 'credentials'), // credentials | host
+            'username' => env('LOG_EXPLORER_USERNAME'),
+            'password_hash' => env('LOG_EXPLORER_PASSWORD_HASH'),
+            'idle_minutes' => 30,
+            'session_minutes' => 480,
+            'login_attempts' => 5,
+            'login_decay_seconds' => 60,
+        ],
         'rate_per_minute' => 60,
         'max_results' => 50,
     ],

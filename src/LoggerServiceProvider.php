@@ -6,6 +6,7 @@ namespace Fiachehr\LaravelLogger;
 
 use Fiachehr\LaravelLogger\Console\DoctorCommand;
 use Fiachehr\LaravelLogger\Console\InstallCommand;
+use Fiachehr\LaravelLogger\Console\PasswordCommand;
 use Fiachehr\LaravelLogger\Console\ServeCommand;
 use Fiachehr\LaravelLogger\Context\CurrentContext;
 use Fiachehr\LaravelLogger\Context\ExceptionContexts;
@@ -78,7 +79,7 @@ final class LoggerServiceProvider extends ServiceProvider
                 'job_class' => $class, 'attempt' => $event->job->attempts()];
         });
         if ($this->app->runningInConsole()) {
-            $this->commands([InstallCommand::class, DoctorCommand::class, ServeCommand::class]);
+            $this->commands([InstallCommand::class, DoctorCommand::class, ServeCommand::class, PasswordCommand::class]);
         }
     }
 }

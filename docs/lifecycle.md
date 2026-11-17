@@ -18,7 +18,7 @@ Pin the previous known tag rather than editing installed vendor files.
 
 Uninstall: remove the channel from stacks/defaults first, remove correlation
 middleware and diagnostic calls/imports, disable both flags, then
-`composer remove fiachehr/laravel-logger`. Remove published config and host Gate
+`composer remove fiachehr/laravel-logger`. Remove published config and host Gate (if using host mode)
 when no longer used; rebuild caches and restart workers. Logs are never deleted
 by uninstall. Follow your own privacy/retention policy to archive/delete them.
 
@@ -39,3 +39,14 @@ by uninstall. Follow your own privacy/retention policy to archive/delete them.
   the host's exception reporter routes through the structured channel.
 - No diagnostic values: metadata mode intentionally shows a type/count summary.
   Approve selected fields in safe mode rather than logging object graphs.
+
+## 0.1 to 0.2
+
+Merge the new `dashboard.auth` block into a published configuration to explicitly
+choose `credentials` or `host`. Published configurations missing the block retain
+host mode; fresh configs select credentials. Independent mode requires a username,
+supported hash, `web` sessions and persistent cache; remove host login middleware
+only when intentionally selecting independent access. Keep host authorization for
+host mode. Rebuild caches/restart workers in the deployment runtime. Changing the
+username/hash invalidates existing independent sessions. Do not overwrite published
+configuration blindly. The JSON schema and log files remain compatible.

@@ -6,6 +6,6 @@ owner has enabled it: https://github.com/fiachehr/laravel-logger/security/adviso
 If unavailable, contact the maintainer via the contact information published on
 their GitHub profile to arrange a private channel. Do not send production logs.
 
-Only the latest 0.1.x patch line receives fixes during this initial release.
+Only the latest 0.2.x patch line receives fixes during this initial release.
 No response-time or audit certification claims are made. See docs/security.md
 for the threat model and known deployment limits.

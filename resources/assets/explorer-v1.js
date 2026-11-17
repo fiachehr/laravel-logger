@@ -163,10 +163,19 @@
           cache: "no-store",
         },
       );
+      if (response.status === 401 || response.status === 403) {
+        $("#poll").value = "0";
+        if (response.status === 401 && $("#sign-in-again")) {
+          $("#sign-in-again").hidden = false;
+          if ($("#dashboard-sign-out")) $("#dashboard-sign-out").hidden = true;
+        }
+      }
       if (!response.ok)
         throw new Error(
           {
-            401: "Sign in to the host application to view logs.",
+            401: document.body.dataset.login
+              ? "Your dashboard session expired. Sign in again."
+              : "Sign in to the host application to view logs.",
             403: "Your account is not authorized to view logs.",
             404: "The dashboard is disabled.",
             422: "Invalid filters or expired cursor. Reset the search.",

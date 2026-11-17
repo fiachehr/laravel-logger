@@ -20,7 +20,7 @@ flowchart LR
     Channel --> Formatter
     Formatter --> Policy[Allowlist and secret protection]
     Policy --> Files[Locked daily JSONL files]
-    Browser[Dashboard] --> Auth[Host guard and explicit Gate]
+    Browser[Dashboard] --> Auth[Independent credentials and revocable session OR host guard and Gate]
     Auth --> Query[Validated filters and encrypted cursors]
     Query --> Reader[Bounded canonical file reader]
     Reader --> Files
@@ -37,7 +37,7 @@ Middleware metadata lives on the current Request. Queue metadata uses scoped
 storage plus explicit worker reset events. No singleton captures scoped context.
 Read pages have byte/time/file/result limits and opaque, expiring snapshot cursors.
 Ordering is append order (newest or oldest), not arbitrary timestamp sorting.
-Fixed assets are served through authorized routes and require no vendor publish.
+Explorer assets are served through authorized routes; only the login stylesheet is public and require no vendor publish.
 Plain DOM rendering makes hostile text inert and keeps distribution simple;
 the tradeoff is a small hand-maintained interface rather than a frontend framework.
 
@@ -46,7 +46,7 @@ the tradeoff is a small hand-maintained interface rather than a frontend framewo
 1. Architecture: audit, version targets, threat model, explicit defaults.
 2. Core: privacy policy, JSON schema, channel, HTTP/queue isolation; canary tests.
 3. Storage: canonical files, rotation, partial records, bounded cursor search.
-4. Dashboard: Gate + guard on every endpoint, accessible table and detail views,
+4. Dashboard: selected authentication on every log endpoint, accessible table and detail views,
    filters, theme, clipboard, grouping; browser and adversarial tests.
 5. Diagnostics / port: explicit helpers; stop restricted to development;
    loopback-only optional launch using host Laravel middleware.
@@ -54,5 +54,18 @@ the tradeoff is a small hand-maintained interface rather than a frontend framewo
    clean-host Composer installation, docs, semver tag, authorized push.
 
 The v0.1.0 initial release is intentionally pre-1.0 while public API usage matures.
-Production safety depends on host authentication, OS permissions, retention and
+Production safety depends on configured dashboard authentication, OS permissions, retention and
 operator approval of every extra diagnostic field. Threats are in security.md.
+
+## 0.2 authentication extension
+
+Fresh configurations use a package-owned Blade login with one configuration-backed
+operator and a password hash. No Eloquent user model, user migration or host login
+is required. The existing Laravel session stores a separate namespace and the host
+cache stores revocable token registrations and rate limits. Stateless services
+resolve current request/session/config values; no per-request singleton is captured.
+
+Host mode retains the original guard/Gate integration. Published 0.1 configurations
+with no auth block fall back to that mode. The new public routes are limited to
+credentials sign-in and its static stylesheet; login/logout POSTs require CSRF.
+All log routes remain private. Credentials are never request-captured or logged.

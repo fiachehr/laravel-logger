@@ -11,7 +11,7 @@
    and real screenshots. `git archive` should include source, config, routes,
    license and bundled assets, with no vendor, node_modules or local .env.
 4. With owner authorization, commit and create an annotated semantic version tag,
-   e.g. `git tag -a v0.1.0 -m 'v0.1.0: initial privacy-first log explorer'`, then
+   e.g. `git tag -a v0.2.0 -m 'v0.2.0: built-in Blade login and independent credentials'`, then
    push the branch and tag. Compare local and remote commit/tag refs. Never
    force-push an existing published version. A GitHub Release is a separate action.
 5. Verify remote CI. Publishing tags is not proof that CI ran or passed. If a
@@ -23,21 +23,21 @@
 - GitHub connector confirmed ownership and **public** repository visibility during
   initial release preparation. Recheck visibility before subsequent publication;
   SSH push access alone does not prove it.
-- `fiachehr/laravel-logger` follows the existing repository identity. The Packagist
-  package URL returned HTTP 404 during initial setup on 2026-11-17; availability
-  and vendor ownership must be rechecked during submission. No reservation is implied.
+- `fiachehr/laravel-logger` follows the existing repository identity. Packagist
+  registration and the indexed v0.1.0 tag were verified through its public JSON
+  endpoint on 2026-11-17. Check indexing of each newly pushed tag separately.
 - Confirm MIT license (approved by owner in the implementation session), valid
   composer.json metadata, provider discovery, package contents and semantic tags.
-- Submit the public repository URL via the maintainer's Packagist account.
-  This session did not authorize submission or provide Packagist credentials.
+- No new Packagist submission is needed for the registered package. The maintainer
+  manages any auto-update integration; tag push does not prove indexing.
 - Configure GitHub/Packagist auto-updates only with explicit authorization.
 - Verify Composer can resolve/install the tag from Packagist in a clean host.
 
-Before Packagist registration, a consumer with repository access can use:
+If a new tag has not been indexed yet, a consumer with repository access can use:
 
 ```bash
 composer config repositories.laravel-logger vcs https://github.com/fiachehr/laravel-logger
-composer require fiachehr/laravel-logger:^0.1
+composer require fiachehr/laravel-logger:^0.2
 ```
 
 The path-repository development fixture does not prove Packagist registration.

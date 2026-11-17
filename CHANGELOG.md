@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.2.0 — 2026-11-17
+
+- Added a built-in Blade username/password login, independent from application
+  users and host Gates, plus package sign-out and a hidden-input password-hash command.
+- Added revocable cache-backed session tokens, credential-rotation invalidation,
+  idle/absolute timeouts, mandatory sign-in/out CSRF and IP/account login limits.
+- Retained host guard/Gate mode and published 0.1 configuration fallback; fresh
+  configurations default to separate credentials with both feature flags disabled.
+- Added mode-aware doctor/installer guidance, session-expiry feedback, real-host
+  browser/auth security tests, login screenshots and setup/URL/troubleshooting docs.
+- Reworked README navigation, installation, panel access, examples and project footer.
+
 ## 0.1.0 — 2026-11-17
 
 Initial opt-in Laravel 12/13 package, MIT licensed:

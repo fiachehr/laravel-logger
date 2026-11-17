@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Fiachehr\LaravelLogger\Http;
 
+use Fiachehr\LaravelLogger\Security\DashboardLogin;
 use Fiachehr\LaravelLogger\Storage\LogSource;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
@@ -16,7 +17,7 @@ final class DashboardController
 {
     public function index(): View
     {
-        return view('log-explorer::dashboard');
+        return view('log-explorer::dashboard', ['credentialsMode' => app(DashboardLogin::class)->mode() === 'credentials']);
     }
 
     public function entries(Request $request, LogSource $source): JsonResponse
