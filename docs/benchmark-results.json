@@ -1,0 +1,33 @@
+{
+    "php": "8.4.5",
+    "laravel": "13.42.0",
+    "method": "Sequential generated JSONL; warm filesystem; median of 5 requests, no cache flush. No-match search is a bounded window, not full archive search.",
+    "datasets": [
+        {
+            "entries": 10000,
+            "file_bytes": 2960000,
+            "first_page_ms": 0.192,
+            "no_match_window_ms": 27.437,
+            "window_bytes": 2965445,
+            "peak_memory_bytes": 20971520
+        },
+        {
+            "entries": 100000,
+            "file_bytes": 29600000,
+            "first_page_ms": 0.203,
+            "no_match_window_ms": 80.185,
+            "window_bytes": 8388608,
+            "peak_memory_bytes": 20971520
+        },
+        {
+            "entries": 1000000,
+            "file_bytes": 296000000,
+            "first_page_ms": 0.228,
+            "no_match_window_ms": 80.168,
+            "window_bytes": 8388608,
+            "peak_memory_bytes": 20971520
+        }
+    ],
+    "format_mean_microseconds": 2.825,
+    "format_and_locked_append_mean_microseconds": 40.54
+}
