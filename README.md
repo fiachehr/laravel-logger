@@ -23,13 +23,15 @@ explorer, not an APM or distributed tracing backend.
 
 | Component | Dependency range | Verification |
 |---|---|---|
-| PHP | 8.3, 8.4, 8.5 | Local execution on 8.4.5; other minors are CI targets until their runs pass |
+| PHP | 8.3, 8.4, 8.5 | 8.3, 8.4, 8.5 integration matrix passed on GitHub Actions |
 | Laravel | 12.x, 13.x | Both integration suites run locally; exact versions in validation record |
 | Monolog | 3.x | Tested resolved version in validation record |
 | Testbench | 10.x / 11.x | Laravel 12 / 13 respectively |
 
-The CI matrix tests all six PHP/Laravel pairs. A configured job is not proof of a
-successful run. No claims for PHP 8.6+, Laravel <=11, or Monolog 1/2.
+All six PHP/Laravel pairs and the real-host browser job passed in
+[the initial CI run](https://github.com/fiachehr/laravel-logger/actions/runs/44025230219).
+No claims for PHP 8.6+, Laravel <=11, Monolog 1/2 or Windows file storage.
+Local file storage is validated on macOS and Linux.
 
 ## Install and opt in
 

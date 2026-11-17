@@ -37,11 +37,28 @@ The earlier validation runs exposed real defects in canonical temporary test pat
 route-template redaction, accessible labels and Reset's HTMLFormElement name collision;
 all were corrected before the final passing runs. No failed check is presented as passed.
 
+## Remote compatibility CI
+
+[Run 44025230219](https://github.com/fiachehr/laravel-logger/actions/runs/44025230219)
+passed for commit `254d62c3ae8ad1589b7e8ae32c142a9f908a1c69`:
+
+| PHP minor | Laravel 12 | Laravel 13 |
+|---|---|---|
+| 8.3 | Passed | Passed |
+| 8.4 | Passed | Passed |
+| 8.5 | Passed | Passed |
+
+Every matrix job passed strict Composer validation, dependency resolution, Pint,
+PHPStan, all PHP tests, and Composer audit. The separate Linux browser job also
+passed npm install/audit, clean host creation with config/route caching, the five
+Playwright/axe tests and artifact upload. Actions are pinned to verified release
+commit SHAs. This is executed evidence, rather than merely a configured matrix.
+
 ## Coverage limits and publication boundaries
 
-- PHP 8.3 and 8.5 are CI targets; no local binaries were available. The six-cell
-  PHP/Laravel workflow must pass before claiming every combination verified.
-  Local success is established only for PHP 8.4.5 with Laravel 12 and 13.
+- Local binaries were available only for PHP 8.4.5. PHP 8.3 and 8.5 were verified
+  remotely on Linux in all six PHP/Laravel combinations above. Windows file
+  storage is not supported or tested in this initial POSIX implementation.
 - Octane lifecycle events are exercised in-process, not against an actual Octane /
   Swoole / RoadRunner server. Queue event integration and context reset are tested;
   no external Redis/database queue daemon was deployed.
