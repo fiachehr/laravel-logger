@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.1 — 2026-11-18
+
+- Remove the remaining `.github` directory and GitHub Actions workflow.
+- Remove the CI badge and update development instructions for manually run checks.
+
 ## 0.3.0 — 2026-11-18
 
 - Add browser-saved display settings for system/light/dark themes, accent colors,

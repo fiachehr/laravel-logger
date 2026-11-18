@@ -5,7 +5,6 @@ and password. Inspect exceptions, follow request IDs, and search recent events
 without adding a log database or building frontend assets in your application.
 
 [![Latest Version](https://img.shields.io/packagist/v/fiachehr/laravel-logger.svg?style=flat-square)](https://packagist.org/packages/fiachehr/laravel-logger)
-[![CI](https://github.com/fiachehr/laravel-logger/actions/workflows/ci.yml/badge.svg)](https://github.com/fiachehr/laravel-logger/actions/workflows/ci.yml)
 [![License](https://img.shields.io/github/license/fiachehr/laravel-logger.svg?style=flat-square)](LICENSE)
 
 **Where is the panel?** Open **`<your application URL>/log-explorer`** after setup.
@@ -67,7 +66,7 @@ out and submit a search. No external telemetry is sent.
 | Local filesystem   | Linux or macOS; private writable storage               |
 | Dashboard sessions | Laravel `web` session middleware and a valid `APP_KEY` |
 
-The CI matrix targets all six PHP/Laravel combinations. PHPUnit checks HTTP and
+PHPUnit checks HTTP and
 package behavior; it does not execute browser interactions or real Octane workers.
 The dashboard uses Laravel's existing session and cache infrastructure: file-based
 sessions/cache can be used when no database or Redis is desired. Review a session
@@ -433,7 +432,8 @@ composer audit
 Testbench. Coverage includes logging/privacy, bounded storage and readers,
 exception context, dashboard routes, independent login, CSRF, session revocation,
 rate limits and password hashing. `composer check` also runs Laravel Pint and
-PHPStan. CI runs the PHP suite on PHP 8.3/8.4/8.5 with Laravel 12/13.
+PHPStan. Run these checks in the PHP/Laravel environments your application uses;
+this repository does not configure GitHub Actions.
 
 The Blade dashboard ships with ready-to-use CSS and vanilla JavaScript; no build
 step or additional development runtime is required. Check actual browser behavior
