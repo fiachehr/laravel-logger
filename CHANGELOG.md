@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.3.0 — 2026-11-18
+
+- Add browser-saved display settings for system/light/dark themes, accent colors,
+  severity coloring, table density, panel width, event inspector layout and messages.
+- Persist timezone selection, support resetting display defaults, and pause polling
+  while settings are open. Existing saved light/dark theme choices are preserved.
+- Remove standalone docs/screenshots, smoke/benchmark tools, community templates
+  and redundant root Markdown files; consolidate essential guidance into README
+  and SECURITY. Keep the PHP/Laravel CI workflow.
+
 ## 0.2.2 — 2026-11-17
 
 - Roll back a short JSONL append so a failed write cannot join the next record.
@@ -45,6 +55,6 @@ Initial opt-in Laravel 12/13 package, MIT licensed:
 - Installer, doctor, loopback-only development serving, clean-host tooling,
   security/regression tests, browser/axe checks, compatibility CI and benchmarks.
 
-Pre-1.0 API; see docs/validation.md for actual tested combinations and limits.
+Pre-1.0 API; see README.md for validation scope and integration limits.
 No Packagist submission, hosted service, automatic global logger interception,
 native dump interception, remote adapters or tenant isolation in this release.

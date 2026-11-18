@@ -6,6 +6,7 @@
   const feedback = $("#feedback");
   const detail = $("#detail");
   const panel = $("#detail-content");
+  const settings = $("#settings");
   let data = [],
     cursors = [null],
     page = 0,
@@ -14,7 +15,8 @@
     activeTab = "overview",
     controller,
     timer,
-    backoff = 1;
+    backoff = 1,
+    scannedBytes = null;
   const text = (tag, value, cls) => {
     const n = document.createElement(tag);
     n.textContent = String(value ?? "—");
@@ -57,6 +59,8 @@
         tr = document.createElement("tr"),
         date = new Date(e.timestamp),
         zone = $("#timezone").value === "utc" ? "UTC" : undefined;
+      if (/^[A-Z]+$/.test(str(e.level)))
+        tr.className = `level-${e.level.toLowerCase()}`;
       const time = text(
         "td",
         Number.isNaN(date.getTime())
@@ -113,6 +117,9 @@
       rows.append(tr);
     }
     $("#empty").hidden = data.length > 0;
+    if (scannedBytes !== null)
+      $("#scan-meta").textContent =
+        `${(scannedBytes / 1024).toFixed(1)} KiB scanned · ${$("#timezone").value === "utc" ? "UTC" : "local time"} · sanitized data`;
   }
   function filters() {
     const params = new URLSearchParams();
@@ -130,7 +137,7 @@
   function schedule() {
     clearTimeout(timer);
     const seconds = Number($("#poll").value);
-    if (seconds && !document.hidden && page === 0 && !detail.open)
+    if (seconds && !document.hidden && page === 0 && !detail.open && !settings.open)
       timer = setTimeout(
         () => load(true),
         Math.min(60000, seconds * 1000 * backoff),
@@ -194,11 +201,10 @@
       if (current !== controller) return;
       data = result.data;
       nextCursor = result.next_cursor;
+      scannedBytes = result.meta.scanned_bytes;
       renderRows();
       $("#page-label").textContent = `Page ${page + 1}`;
       feedback.textContent = `${data.length} events in this window${result.meta.bounded ? " · Scan limit reached; continue with Next window." : ""}${result.meta.malformed_entries ? ` · ${result.meta.malformed_entries} malformed fragments skipped.` : ""}${result.meta.rotated_files ? " · Rotated files skipped; refresh for a new snapshot." : ""}`;
-      $("#scan-meta").textContent =
-        `${(result.meta.scanned_bytes / 1024).toFixed(1)} KiB scanned · ${$("#timezone").value === "utc" ? "UTC" : "local time"} · sanitized data`;
       backoff = 1;
     } catch (error) {
       if (error.name === "AbortError") return;
@@ -414,27 +420,79 @@
       load();
     }
   });
-  $("#timezone").addEventListener("change", renderRows);
   $("#poll").addEventListener("change", schedule);
   document.addEventListener("visibilitychange", schedule);
-  function theme(value) {
-    document.body.dataset.theme = value;
-    $("#theme").setAttribute("aria-pressed", String(value === "dark"));
+  const defaults = {
+    theme: "system",
+    accent: "rust",
+    severity: "badges",
+    density: "comfortable",
+    width: "contained",
+    inspector: "drawer",
+    message: "preview",
+    timezone: "utc",
+  };
+  const preferenceKey = `log-explorer-preferences:${location.pathname}`;
+  const colorScheme = matchMedia("(prefers-color-scheme: dark)");
+  const controls = Object.fromEntries(
+    Object.keys(defaults).map((key) => [
+      key,
+      key === "timezone" ? $("#timezone") : $(`#setting-${key}`),
+    ]),
+  );
+  let preferences = { ...defaults };
+  function applyTheme() {
+    document.body.dataset.theme =
+      preferences.theme === "system"
+        ? colorScheme.matches ? "dark" : "light"
+        : preferences.theme;
+  }
+  function applyPreferences(source) {
+    for (const [key, control] of Object.entries(controls)) {
+      const value = source?.[key];
+      preferences[key] = [...control.options].some((option) => option.value === value)
+        ? value : defaults[key];
+      control.value = preferences[key];
+      if (key !== "theme" && key !== "timezone")
+        document.body.dataset[key] = preferences[key];
+    }
+    applyTheme();
+    renderRows();
+  }
+  function savePreferences() {
+    try {
+      localStorage.setItem(preferenceKey, JSON.stringify(preferences));
+      $("#settings-feedback").textContent = "Display preferences saved.";
+    } catch {
+      $("#settings-feedback").textContent =
+        "Applied for this visit. Browser storage is unavailable.";
+    }
   }
   try {
-    theme(
-      localStorage.getItem("log-explorer-theme") ||
-        (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"),
-    );
+    const saved = localStorage.getItem(preferenceKey);
+    applyPreferences(saved ? JSON.parse(saved) : {
+      theme: localStorage.getItem("log-explorer-theme") || "system",
+    });
   } catch {
-    theme("light");
+    applyPreferences(defaults);
   }
-  $("#theme").addEventListener("click", () => {
-    const value = document.body.dataset.theme === "dark" ? "light" : "dark";
-    theme(value);
-    try {
-      localStorage.setItem("log-explorer-theme", value);
-    } catch {}
+  colorScheme.addEventListener("change", () => {
+    if (preferences.theme === "system") applyTheme();
+  });
+  for (const [key, control] of Object.entries(controls))
+    control.addEventListener("change", () => {
+      applyPreferences({ ...preferences, [key]: control.value });
+      savePreferences();
+    });
+  $("#open-settings").addEventListener("click", () => {
+    settings.showModal();
+    clearTimeout(timer);
+  });
+  $("#close-settings").addEventListener("click", () => settings.close());
+  settings.addEventListener("close", schedule);
+  $("#reset-settings").addEventListener("click", () => {
+    applyPreferences(defaults);
+    savePreferences();
   });
   const restored = new URLSearchParams(location.search);
   if (location.search) history.replaceState(null, "", location.pathname);

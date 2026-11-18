@@ -12,8 +12,6 @@ without adding a log database or building frontend assets in your application.
 For example: **http://127.0.0.1:8000/log-explorer**. You will be taken to the
 package's own sign-in page. [Configure the dashboard login](#3-configure-the-built-in-login).
 
-![Built-in Blade dashboard, captured in a real Laravel application](docs/screenshots/explorer-desktop.png)
-
 ## Contents
 
 - [Features](#features)
@@ -26,7 +24,7 @@ package's own sign-in page. [Configure the dashboard login](#3-configure-the-bui
 - [Safe diagnostic helpers](#safe-diagnostic-helpers)
 - [Configuration and privacy](#configuration-and-privacy)
 - [Troubleshooting](#troubleshooting)
-- [Documentation](#documentation)
+- [Schema and extensions](#schema-and-extensions)
 - [Development and tests](#development-and-tests)
 - [Upgrading from 0.1](#upgrading-from-01)
 - [Contributing](#contributing)
@@ -38,7 +36,8 @@ package's own sign-in page. [Configure the dashboard login](#3-configure-the-bui
 ## Features
 
 - **Built-in interface:** Blade pages, bundled CSS/JavaScript, responsive table,
-  light/dark themes, keyboard navigation and accessible detail tabs. No CDN,
+  saved display preferences, light/dark/system themes, keyboard navigation and
+  accessible detail tabs. No CDN,
   mandatory asset publishing, separate frontend application, or host Node build.
 - **Independent login:** one separately configured operator account, hashed password,
   CSRF protection, sign-out, session rotation, idle/absolute expiry, credential
@@ -68,8 +67,8 @@ out and submit a search. No external telemetry is sent.
 | Local filesystem   | Linux or macOS; private writable storage               |
 | Dashboard sessions | Laravel `web` session middleware and a valid `APP_KEY` |
 
-The CI matrix covers all six PHP/Laravel combinations. See the
-[validation record](docs/validation.md) for executed checks and runtime limits.
+The CI matrix targets all six PHP/Laravel combinations. PHPUnit checks HTTP and
+package behavior; it does not execute browser interactions or real Octane workers.
 The dashboard uses Laravel's existing session and cache infrastructure: file-based
 sessions/cache can be used when no database or Redis is desired. Review a session
 driver change for the whole host app rather than changing it just for this package.
@@ -79,7 +78,7 @@ driver change for the whole host app rather than changing it just for this packa
 ### 1. Install the package
 
 ```bash
-composer require fiachehr/laravel-logger:^0.2
+composer require fiachehr/laravel-logger:^0.3
 php artisan log-explorer:install
 ```
 
@@ -96,7 +95,7 @@ If a new tag has not reached Packagist yet, use the GitHub repository directly:
 
 ```bash
 composer config repositories.laravel-logger vcs https://github.com/fiachehr/laravel-logger
-composer require fiachehr/laravel-logger:^0.2
+composer require fiachehr/laravel-logger:^0.3
 ```
 
 Run Composer and Artisan in the application's actual runtime. With Docker, run
@@ -190,8 +189,6 @@ your application's regular user panel first. Select **Sign out** in the explorer
 to end its session; the host application's login and other session data are kept.
 The two logins share Laravel's session infrastructure, with separate authentication state.
 
-![Separate dashboard sign-in page](docs/screenshots/explorer-login.png)
-
 For an optional, dedicated **local development** port:
 
 ```bash
@@ -201,7 +198,9 @@ php artisan log-explorer:serve --port=8765
 Open **http://127.0.0.1:8765/log-explorer** and sign in there. The command requires
 `APP_ENV=local` or `development`, binds `127.0.0.1`, and serves the whole host app
 in the foreground. It does not start automatically. Production uses an
-operator-managed web server/reverse proxy; see [deployment examples](docs/deployment.md).
+operator-managed Laravel web server/reverse proxy with HTTPS, secure session
+cookies and correctly configured trusted proxies. Restrict any dedicated listener
+with a firewall or VPN; a separate port does not replace dashboard authentication.
 
 To change the path, set `LOG_EXPLORER_PATH=internal/logs`, clear/rebuild route and
 config caches, and open `/internal/logs`. Login/logout/assets move with that prefix.
@@ -239,9 +238,15 @@ it does not replace a real browser login test.
    **Raw**. Raw means the stored sanitized JSON line, never pre-sanitization input.
 3. Use **Show this request** or a table request ID to group events with that ID.
    This is correlation within the configured source, not distributed tracing.
-4. Choose UTC/local time, switch theme, copy sanitized JSON, or enable auto refresh.
-   Polling pauses while a detail panel is open or the tab is hidden.
-5. **Next window** continues a bounded search. A window may have no matches even
+4. Open **Settings** to choose a light/dark/system theme, accent color, severity
+   badges/row tint/monochrome, comfortable/compact rows, contained/full panel width,
+   side/centered event details and two-line/full messages. Changes apply immediately.
+   Preferences and UTC/local time are saved per panel path in this browser; no log
+   content or credentials are stored. **Reset defaults** restores the initial display.
+   If browser storage is blocked, preferences still apply for the current visit.
+5. Copy sanitized JSON or enable auto refresh. Polling pauses while settings or
+   event details are open or the tab is hidden.
+6. **Next window** continues a bounded search. A window may have no matches even
    when older files contain matches. There is no unbounded archive total.
 
 Newest/oldest sorting follows file append order. Refresh starts a new snapshot;
@@ -292,7 +297,8 @@ Captured HTTP metadata includes method, route name/template and a generated ID,
 not actual route values, query strings, IPs, headers or bodies. Incoming IDs are
 ignored unless explicitly trusted behind an edge that strips/replaces client IDs.
 Queue class/attempt metadata and scoped cleanup use Laravel worker lifecycle events;
-job payloads are not logged. See [validation limits](docs/validation.md) for Octane.
+job payloads are not logged. Octane lifecycle tests simulate events in-process;
+verify your actual Swoole/RoadRunner integration in the host application.
 
 ## Using your application's login instead
 
@@ -334,7 +340,7 @@ models and request graphs are never dumped. The namespaced `log_dd` helper is
 rejected with `LogicException` unless logging, diagnostics and `allow_stop` are
 explicitly enabled in `local`/`development`; it then logs and throws an HTTP 500
 exception to unwind execution. Native `dump()`/`dd()` are unchanged. See the
-[security policy](docs/security.md) before enabling diagnostics.
+[security policy](SECURITY.md) before enabling diagnostics.
 
 ## Configuration and privacy
 
@@ -395,12 +401,22 @@ does not restore access, even when concurrent requests still hold old session da
 | Empty table          | Generate a new event through the structured channel; check level, filters, daily quota and storage permissions with `doctor`. |
 | Generic message text | This is the default categorical privacy policy; use fixed event codes and attach the Throwable.                               |
 
-## Documentation
+## Schema and extensions
 
-- [Architecture](docs/architecture.md) · [JSON schema and LogSource extension](docs/schema.md)
-- [Security and threat model](docs/security.md) · [Deployment and dedicated port](docs/deployment.md)
-- [Upgrade, rollback and uninstall](docs/lifecycle.md) · [Release procedure](docs/releasing.md)
-- [Performance measurements](docs/performance.md) · [Validation record](docs/validation.md)
+The default source writes one UTF-8 JSON object per line with `schema_version: "1.0"`,
+UTC `timestamp`, `level`, categorical `event`/`message`, approved application/service/
+environment identifiers, optional `request_id`, filtered `context`, and optional
+bounded `exception`/`diagnostic` summaries. Traces exclude arguments. External paths
+become basenames. Minimal encoding-failure records can lack required reader fields
+and are skipped. Monolog `extra` processors are not automatically serialized.
+
+To supply another source, bind `Fiachehr\LaravelLogger\Storage\LogSource` and implement
+`search(array $filters, ?string $cursor = null, int $limit = 50): array`. Return
+`data` entries shaped as `{entry: object, raw: sanitized JSON string}`, an opaque
+`next_cursor` or null, and `meta` containing `scanned_bytes`, `malformed_entries`,
+`rotated_files`, `bounded` and `order`. Preserve privacy, cursor validation and
+resource bounds. The built-in source is shared; tenant isolation requires a host
+implementation that enforces its own tenant policy.
 
 ## Development and tests
 
@@ -420,14 +436,9 @@ rate limits and password hashing. `composer check` also runs Laravel Pint and
 PHPStan. CI runs the PHP suite on PHP 8.3/8.4/8.5 with Laravel 12/13.
 
 The Blade dashboard ships with ready-to-use CSS and vanilla JavaScript; no build
-step or additional development runtime is required. Screenshots are documentation
-assets. For optional file-reader benchmarks, create a disposable Laravel host in a
-**new** directory and use the PHP tooling:
-
-```bash
-tools/create-smoke-host.sh /absolute/new-host
-php tools/benchmark.php /absolute/new-host
-```
+step or additional development runtime is required. Check actual browser behavior
+and host worker/server integration separately. Local PHP checks do not establish
+production concurrency or cold-disk performance.
 
 ## Upgrading from 0.1
 
@@ -438,17 +449,28 @@ from the package configuration into your published file; do not blindly overwrit
 host settings. Set `mode` through `LOG_EXPLORER_AUTH_MODE`, configure credentials
 or the host Gate, rebuild caches, and restart workers. The JSON schema remains 1.0.
 
+For later upgrades, review [CHANGELOG.md](CHANGELOG.md), back up published host
+configuration, run `composer update fiachehr/laravel-logger`, compare new defaults,
+rebuild configuration/routes and restart long-running workers. Verify doctor,
+a synthetic log write and authorized/unauthorized access. Roll back by restoring
+the previous Composer constraint/lockfile, running `composer install` and rebuilding
+caches/workers. Uninstall by removing the channel from logging stacks, correlation
+middleware and diagnostic calls before `composer remove fiachehr/laravel-logger`.
+Remove unused published config/Gates and rebuild caches. Existing logs are preserved.
+
 ## Contributing
 
-Contributions are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md), use synthetic
-data, include meaningful regression coverage, and update documentation and the
-[CHANGELOG](CHANGELOG.md). Follow the [code of conduct](CODE_OF_CONDUCT.md).
+Describe the concrete behavior in an issue, use synthetic data, include meaningful
+regression coverage, and update this README and [CHANGELOG](CHANGELOG.md). Run
+`composer validate --strict`, `composer check` and `composer audit`. Keep privacy
+controls enabled and avoid new dependencies without a concrete need. Participate
+respectfully and report private concerns through the maintainer's contact channel.
 
 ## Security
 
 Report vulnerabilities privately as described in [SECURITY.md](SECURITY.md).
 Do not post production logs, credentials or exploit details in public issues.
-Review the [threat model and production checklist](docs/security.md) before deployment.
+Review the threat model and production guidance in that policy before deployment.
 
 ## License
 

@@ -13,7 +13,7 @@
 <a class="skip" href="#entries">Skip to log entries</a>
 <header class="topbar">
     <a class="brand" href="{{ route('log-explorer.index') }}"><span class="brand-mark" aria-hidden="true">≋</span> LOG<span class="brand-light">EXPLORER</span><span class="version" aria-hidden="true">01</span></a>
-    <div class="top-actions"><span class="private-label"><span aria-hidden="true">◆</span> PRIVATE WORKSPACE</span><button id="theme" class="quiet" aria-label="Switch color theme">◐ Theme</button>@if($credentialsMode ?? false)<a id="sign-in-again" class="quiet" href="{{ route('log-explorer.login') }}" hidden>Sign in again</a><form id="dashboard-sign-out" action="{{ route('log-explorer.logout') }}" method="POST">@csrf<button type="submit" class="quiet">Sign out</button></form>@endif</div>
+    <div class="top-actions"><span class="private-label"><span aria-hidden="true">◆</span> PRIVATE WORKSPACE</span><button id="open-settings" class="quiet" aria-haspopup="dialog" aria-controls="settings">⚙ Settings</button>@if($credentialsMode ?? false)<a id="sign-in-again" class="quiet" href="{{ route('log-explorer.login') }}" hidden>Sign in again</a><form id="dashboard-sign-out" action="{{ route('log-explorer.logout') }}" method="POST">@csrf<button type="submit" class="quiet">Sign out</button></form>@endif</div>
 </header>
 <main>
     <section class="intro" aria-labelledby="page-title"><div><p class="eyebrow">OBSERVABILITY / EVENT STREAM</p><h1 id="page-title">A clearer view.<br><span>One event at a time.</span></h1><p class="subtitle">Structured logs, connected requests, and the details that matter.</p></div><div class="stream-note"><span class="pulse" aria-hidden="true"></span> BOUNDED FILE SEARCH<br><small>Read-only · JSONL · No telemetry</small></div></section>
@@ -38,6 +38,21 @@
     </section>
     <p class="footnote">Only events routed to the structured channel appear here. Correlation connects events sharing a request ID; it is not distributed tracing.</p>
 </main>
+<dialog id="settings" aria-labelledby="settings-title" aria-describedby="settings-description">
+    <div class="drawer-header"><div><p class="eyebrow">YOUR WORKSPACE</p><h2 id="settings-title">Display settings</h2></div><button id="close-settings" class="quiet" aria-label="Close display settings">✕</button></div>
+    <p id="settings-description" class="subtitle">Changes apply immediately and are saved for this panel in this browser.</p>
+    <div class="settings-grid">
+        <label for="setting-theme">Theme<select id="setting-theme"><option value="system">Follow system</option><option value="light">Light</option><option value="dark">Dark</option></select></label>
+        <label for="setting-accent">Accent color<select id="setting-accent"><option value="rust">Rust</option><option value="blue">Blue</option><option value="green">Green</option><option value="violet">Violet</option></select></label>
+        <label for="setting-severity">Severity colors<select id="setting-severity"><option value="badges">Badges only</option><option value="rows">Tint event rows</option><option value="mono">Monochrome</option></select></label>
+        <label for="setting-density">Table density<select id="setting-density"><option value="comfortable">Comfortable</option><option value="compact">Compact</option></select></label>
+        <label for="setting-width">Panel width<select id="setting-width"><option value="contained">Contained</option><option value="full">Full width</option></select></label>
+        <label for="setting-inspector">Event details<select id="setting-inspector"><option value="drawer">Side drawer</option><option value="center">Centered dialog</option></select></label>
+        <label for="setting-message">Message display<select id="setting-message"><option value="preview">Two-line preview</option><option value="wrap">Full message</option></select></label>
+    </div>
+    <div class="settings-preview" aria-label="Severity color preview"><span class="badge level-info">• INFO</span><span class="badge level-warning">• WARNING</span><span class="badge level-error">! ERROR</span></div>
+    <footer class="settings-footer"><button id="reset-settings" class="quiet">Reset defaults</button><p id="settings-feedback" role="status" aria-live="polite"></p></footer>
+</dialog>
 <dialog id="detail" aria-labelledby="detail-title"><div class="drawer-header"><div><p class="eyebrow">EVENT INSPECTOR</p><h2 id="detail-title">Event details</h2></div><button id="close-detail" class="quiet" aria-label="Close event details">✕</button></div><div class="detail-toolbar"><button id="copy-id" class="quiet">Copy request ID</button><button id="group-id" class="quiet">Show this request ↗</button><button id="copy-json" class="quiet">Copy sanitized JSON</button></div><div role="tablist" aria-label="Event detail views" id="tabs"><button role="tab" id="tab-overview" aria-controls="detail-content" aria-selected="true" data-tab="overview">Overview</button><button role="tab" id="tab-exception" aria-controls="detail-content" aria-selected="false" tabindex="-1" data-tab="exception">Exception</button><button role="tab" id="tab-context" aria-controls="detail-content" aria-selected="false" tabindex="-1" data-tab="context">Context</button><button role="tab" id="tab-json" aria-controls="detail-content" aria-selected="false" tabindex="-1" data-tab="json">JSON</button><button role="tab" id="tab-raw" aria-controls="detail-content" aria-selected="false" tabindex="-1" data-tab="raw">Raw</button></div><div id="detail-content" role="tabpanel" aria-labelledby="tab-overview" tabindex="0"></div><p id="copy-feedback" class="copy-feedback" role="status" aria-live="polite"></p></dialog>
 </body>
 </html>
